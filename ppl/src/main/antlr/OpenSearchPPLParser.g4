@@ -116,6 +116,11 @@ renameClasue
 
 byClause
     : BY fieldList
+    | BY spanClause
+    ;
+
+spanClause
+    : SPAN LT_PRTHS fieldExpression COMMA stringLiteral RT_PRTHS
     ;
 
 sortbyClause
@@ -287,6 +292,10 @@ literalValue
     | integerLiteral
     | decimalLiteral
     | booleanLiteral
+    ;
+
+spanLiteral
+    : integerLiteral ID?
     ;
 
 intervalLiteral

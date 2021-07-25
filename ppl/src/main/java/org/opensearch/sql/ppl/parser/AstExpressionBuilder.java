@@ -59,6 +59,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -79,9 +80,12 @@ import org.opensearch.sql.ast.expression.Literal;
 import org.opensearch.sql.ast.expression.Not;
 import org.opensearch.sql.ast.expression.Or;
 import org.opensearch.sql.ast.expression.QualifiedName;
+import org.opensearch.sql.ast.expression.Span;
 import org.opensearch.sql.ast.expression.UnresolvedExpression;
 import org.opensearch.sql.ast.expression.Xor;
+import org.opensearch.sql.common.antlr.SyntaxCheckException;
 import org.opensearch.sql.common.utils.StringUtils;
+import org.opensearch.sql.ppl.antlr.parser.OpenSearchPPLParser;
 import org.opensearch.sql.ppl.antlr.parser.OpenSearchPPLParserBaseVisitor;
 import org.opensearch.sql.ppl.utils.ArgumentFactory;
 
@@ -288,6 +292,13 @@ public class AstExpressionBuilder extends OpenSearchPPLParserBaseVisitor<Unresol
     return new Literal(Boolean.valueOf(ctx.getText()), DataType.BOOLEAN);
   }
 
+  @Override
+  public UnresolvedExpression visitSpanClause(OpenSearchPPLParser.SpanClauseContext ctx) {
+    return new Span(
+        visit(ctx.fieldExpression()),
+        visit(ctx.stringLiteral()));
+  }
+
   private QualifiedName visitIdentifiers(List<? extends ParserRuleContext> ctx) {
     return new QualifiedName(
         ctx.stream()
@@ -296,5 +307,31 @@ public class AstExpressionBuilder extends OpenSearchPPLParserBaseVisitor<Unresol
             .collect(Collectors.toList())
     );
   }
+
+//  private String extractIntervalUnit(OpenSearchPPLParser.IntervalUnitContext ctx) {
+//    String unit = ctx.getText();
+//    switch (unit.toLowerCase(Locale.ROOT)) {
+//      case "microsecond":
+//        return "ms";
+//      case "second":
+//        return "s";
+//      case "minute":
+//        return "m";
+//      case "hour":
+//        return "h";
+//      case "day":
+//        return "d";
+//      case "week":
+//        return "w";
+//      case "month":
+//        return "M";
+//      case "quarter":
+//        return "q";
+//      case "year":
+//        return "y";
+//      default:
+//        throw new SyntaxCheckException(String.format("%s is not acceptable as span unit.", unit));
+//    }
+//  }
 
 }

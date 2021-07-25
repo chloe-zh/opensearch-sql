@@ -45,6 +45,7 @@ import org.opensearch.sql.data.model.ExprTupleValue;
 import org.opensearch.sql.data.model.ExprValue;
 import org.opensearch.sql.expression.Expression;
 import org.opensearch.sql.expression.NamedExpression;
+import org.opensearch.sql.expression.SpanExpression;
 import org.opensearch.sql.expression.aggregation.AggregationState;
 import org.opensearch.sql.expression.aggregation.Aggregator;
 import org.opensearch.sql.expression.aggregation.NamedAggregator;
@@ -173,7 +174,11 @@ public class AggregationOperator extends PhysicalPlan {
     public GroupKey(ExprValue value) {
       this.groupByValueList = new ArrayList<>();
       for (Expression groupExpr : groupByExprList) {
-        this.groupByValueList.add(groupExpr.valueOf(value.bindingTuples()));
+        if (isSpan(groupExpr)) {
+          this.groupByValueList.addAll(spanGroupKeys(groupExpr));
+        } else {
+          this.groupByValueList.add(groupExpr.valueOf(value.bindingTuples()));
+        }
       }
     }
 
@@ -186,6 +191,21 @@ public class AggregationOperator extends PhysicalPlan {
         map.put(groupByExprList.get(i).getNameOrAlias(), groupByValueList.get(i));
       }
       return map;
+    }
+
+    private List<ExprValue> spanGroupKeys(Expression groupExpr) {
+      // todo
+      throw new IllegalStateException(
+          "Aggregation with span is not implemented in physical plan yet.");
+    }
+
+    private boolean isSpan(Expression expr) {
+      if (expr instanceof NamedExpression) {
+        if (((NamedExpression) expr).getDelegated() instanceof SpanExpression) {
+          return true;
+        }
+      }
+      return false;
     }
   }
 }

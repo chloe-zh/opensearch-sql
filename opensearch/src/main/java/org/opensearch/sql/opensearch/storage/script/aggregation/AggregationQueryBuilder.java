@@ -50,12 +50,15 @@ import org.opensearch.sql.expression.Expression;
 import org.opensearch.sql.expression.ExpressionNodeVisitor;
 import org.opensearch.sql.expression.NamedExpression;
 import org.opensearch.sql.expression.ReferenceExpression;
+import org.opensearch.sql.expression.SpanExpression;
 import org.opensearch.sql.expression.aggregation.NamedAggregator;
 import org.opensearch.sql.opensearch.response.agg.CompositeAggregationParser;
+import org.opensearch.sql.opensearch.response.agg.HistogramAggregationParser;
 import org.opensearch.sql.opensearch.response.agg.MetricParser;
 import org.opensearch.sql.opensearch.response.agg.NoBucketAggregationParser;
 import org.opensearch.sql.opensearch.response.agg.OpenSearchAggregationResponseParser;
 import org.opensearch.sql.opensearch.storage.script.aggregation.dsl.BucketAggregationBuilder;
+import org.opensearch.sql.opensearch.storage.script.aggregation.dsl.HistogramAggregationBuilder;
 import org.opensearch.sql.opensearch.storage.script.aggregation.dsl.MetricAggregationBuilder;
 import org.opensearch.sql.opensearch.storage.serialization.ExpressionSerializer;
 
@@ -81,10 +84,13 @@ public class AggregationQueryBuilder extends ExpressionNodeVisitor<AggregationBu
    */
   private final MetricAggregationBuilder metricBuilder;
 
+  private final HistogramAggregationBuilder histogramAggregationBuilder;
+
   public AggregationQueryBuilder(
       ExpressionSerializer serializer) {
     this.bucketBuilder = new BucketAggregationBuilder(serializer);
     this.metricBuilder = new MetricAggregationBuilder(serializer);
+    this.histogramAggregationBuilder = new HistogramAggregationBuilder(serializer);
   }
 
   /** Build AggregationBuilder. */
@@ -102,6 +108,12 @@ public class AggregationQueryBuilder extends ExpressionNodeVisitor<AggregationBu
       return Pair.of(
           ImmutableList.copyOf(metrics.getLeft().getAggregatorFactories()),
           new NoBucketAggregationParser(metrics.getRight()));
+    } else if (groupByList.size() == 1 && groupByList.get(0).getDelegated() instanceof SpanExpression) {
+      return Pair.of(
+          Collections.singletonList(histogramAggregationBuilder.build(groupByList.get(0))
+              .subAggregations(metrics.getLeft())),
+          new HistogramAggregationParser(metrics.getRight().get(0))
+      );
     } else {
       GroupSortOrder groupSortOrder = new GroupSortOrder(sortList);
       return Pair.of(

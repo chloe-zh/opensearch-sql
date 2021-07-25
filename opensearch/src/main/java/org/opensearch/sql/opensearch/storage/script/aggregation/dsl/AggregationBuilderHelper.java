@@ -38,6 +38,7 @@ import org.opensearch.script.Script;
 import org.opensearch.sql.expression.Expression;
 import org.opensearch.sql.expression.FunctionExpression;
 import org.opensearch.sql.expression.ReferenceExpression;
+import org.opensearch.sql.expression.SpanExpression;
 import org.opensearch.sql.opensearch.storage.script.ScriptUtils;
 import org.opensearch.sql.opensearch.storage.serialization.ExpressionSerializer;
 
@@ -66,6 +67,9 @@ public class AggregationBuilderHelper<T> {
       return scriptBuilder.apply(new Script(
           DEFAULT_SCRIPT_TYPE, EXPRESSION_LANG_NAME, serializer.serialize(expression),
           emptyMap()));
+//    } else if (expression instanceof SpanExpression) {
+//      String name = expression.toString();
+//      return fieldBuilder.apply(ScriptUtils.convertTextToKeyword());
     } else {
       throw new IllegalStateException(String.format("metric aggregation doesn't support "
           + "expression %s", expression));

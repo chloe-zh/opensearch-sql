@@ -31,7 +31,7 @@ import org.opensearch.sql.protocol.response.QueryResult;
 
 public class VisualizationResponseFormatter extends JsonResponseFormatter<QueryResult> {
   public VisualizationResponseFormatter() {
-    super(Style.COMPACT);
+    super(Style.PRETTY);
   }
 
   /**

@@ -49,6 +49,7 @@ import org.opensearch.sql.ast.expression.Literal;
 import org.opensearch.sql.ast.expression.Map;
 import org.opensearch.sql.ast.expression.Not;
 import org.opensearch.sql.ast.expression.Or;
+import org.opensearch.sql.ast.expression.Span;
 import org.opensearch.sql.ast.expression.UnresolvedExpression;
 import org.opensearch.sql.ast.expression.Xor;
 import org.opensearch.sql.ast.tree.Aggregation;
@@ -321,6 +322,11 @@ public class PPLQueryDataAnonymizer extends AbstractNodeVisitor<String, String> 
     public String visitAlias(Alias node, String context) {
       String expr = node.getDelegated().accept(this, context);
       return StringUtils.format("%s", expr);
+    }
+
+    @Override
+    public String visitSpan(Span node, String context) {
+      return node.toString();
     }
   }
 }

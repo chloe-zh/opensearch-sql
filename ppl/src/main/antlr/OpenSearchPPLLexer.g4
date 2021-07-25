@@ -53,6 +53,7 @@ DESC:                               'DESC';
 
 // CLAUSE KEYWORDS
 SORTBY:                             'SORTBY';
+SPAN:                               'SPAN';
 
 // FIELD KEYWORDS
 AUTO:                               'AUTO';

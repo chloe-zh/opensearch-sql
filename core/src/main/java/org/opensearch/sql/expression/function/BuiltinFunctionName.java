@@ -135,6 +135,7 @@ public enum BuiltinFunctionName {
   STDDEV_SAMP(FunctionName.of("stddev_samp")),
   // population standard deviation.
   STDDEV_POP(FunctionName.of("stddev_pop")),
+  SPAN(FunctionName.of("span")),
 
   /**
    * Text Functions.
