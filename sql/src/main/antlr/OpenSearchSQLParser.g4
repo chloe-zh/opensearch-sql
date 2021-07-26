@@ -128,8 +128,24 @@ fromClause
     ;
 
 relation
-    : tableName (AS? alias)?                                                #tableAsRelation
+    : left=relation
+        ( CROSS JOIN right=relation
+        | joinType JOIN right=relation joinCondition
+//        | NATURAL joinType JOIN right=relation
+        )                                                                   #joinAsRelation
+    | tableName (AS? alias)?                                                #tableAsRelation
     | LR_BRACKET subquery=querySpecification RR_BRACKET AS? alias           #subqueryAsRelation
+    ;
+
+joinType
+    : INNER?
+    | LEFT OUTER?
+    | RIGHT OUTER?
+    | FULL OUTER?
+    ;
+
+joinCondition
+    : ON expression
     ;
 
 whereClause

@@ -26,6 +26,7 @@
 
 package org.opensearch.sql.planner.physical;
 
+import org.opensearch.sql.planner.physical.join.JoinOperator;
 import org.opensearch.sql.storage.TableScanOperator;
 
 /**
@@ -89,6 +90,10 @@ public abstract class PhysicalPlanNodeVisitor<R, C> {
   }
 
   public R visitLimit(LimitOperator node, C context) {
+    return visitNode(node, context);
+  }
+
+  public R visitJoin(JoinOperator node, C context) {
     return visitNode(node, context);
   }
 

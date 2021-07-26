@@ -56,6 +56,7 @@ import org.opensearch.sql.ast.tree.Dedupe;
 import org.opensearch.sql.ast.tree.Eval;
 import org.opensearch.sql.ast.tree.Filter;
 import org.opensearch.sql.ast.tree.Head;
+import org.opensearch.sql.ast.tree.Join;
 import org.opensearch.sql.ast.tree.Limit;
 import org.opensearch.sql.ast.tree.Project;
 import org.opensearch.sql.ast.tree.RareTopN;
@@ -79,6 +80,7 @@ import org.opensearch.sql.planner.logical.LogicalAggregation;
 import org.opensearch.sql.planner.logical.LogicalDedupe;
 import org.opensearch.sql.planner.logical.LogicalEval;
 import org.opensearch.sql.planner.logical.LogicalFilter;
+import org.opensearch.sql.planner.logical.LogicalJoin;
 import org.opensearch.sql.planner.logical.LogicalLimit;
 import org.opensearch.sql.planner.logical.LogicalPlan;
 import org.opensearch.sql.planner.logical.LogicalProject;
@@ -145,6 +147,28 @@ public class Analyzer extends AbstractNodeVisitor<LogicalPlan, AnalysisContext> 
     // when analyzing qualified name in the subquery layer
     curEnv.define(new Symbol(Namespace.INDEX_NAME, node.getAliasAsTableName()), STRUCT);
     return subquery;
+  }
+
+  @Override
+  public LogicalPlan visitJoin(Join node, AnalysisContext context) {
+    context.push();
+    LogicalRelation left = (LogicalRelation) relation(node.getLeft(), context);
+    LogicalRelation right = (LogicalRelation) relation(node.getRight(), context);
+    Expression condition = node.getJoinCondition().accept(expressionAnalyzer, context);
+    TypeEnvironment curEnv = context.peek();
+    curEnv.define(new Symbol(Namespace.FIELD_NAME, node.getLeft().getTableNameOrAlias()), STRUCT);
+    curEnv.define(new Symbol(Namespace.FIELD_NAME, node.getRight().getTableNameOrAlias()), STRUCT);
+    return new LogicalJoin(left, right, node.getJoinType(), condition, node.getIsEquiJoin());
+  }
+
+  // temporary solution
+  // put tables and field names all into the same env
+  private LogicalPlan relation(Relation node, AnalysisContext context) {
+    TypeEnvironment curEnv = context.peek();
+    Table table = storageEngine.getTable(node.getTableName());
+    table.getFieldTypes().forEach((k, v) -> curEnv.define(new Symbol(Namespace.FIELD_NAME, k), v));
+    curEnv.define(new Symbol(Namespace.INDEX_NAME, node.getTableNameOrAlias()), STRUCT);
+    return new LogicalRelation(node.getTableName());
   }
 
   @Override

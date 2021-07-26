@@ -56,6 +56,7 @@ import org.opensearch.sql.ast.tree.Dedupe;
 import org.opensearch.sql.ast.tree.Eval;
 import org.opensearch.sql.ast.tree.Filter;
 import org.opensearch.sql.ast.tree.Head;
+import org.opensearch.sql.ast.tree.Join;
 import org.opensearch.sql.ast.tree.Limit;
 import org.opensearch.sql.ast.tree.Project;
 import org.opensearch.sql.ast.tree.RareTopN;
@@ -247,6 +248,10 @@ public abstract class AbstractNodeVisitor<T, C> {
   }
 
   public T visitLimit(Limit node, C context) {
+    return visitChildren(node, context);
+  }
+
+  public T visitJoin(Join node, C context) {
     return visitChildren(node, context);
   }
 }

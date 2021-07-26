@@ -27,10 +27,13 @@
 
 package org.opensearch.sql.planner;
 
+import org.opensearch.sql.ast.tree.Join;
+import org.opensearch.sql.expression.Expression;
 import org.opensearch.sql.planner.logical.LogicalAggregation;
 import org.opensearch.sql.planner.logical.LogicalDedupe;
 import org.opensearch.sql.planner.logical.LogicalEval;
 import org.opensearch.sql.planner.logical.LogicalFilter;
+import org.opensearch.sql.planner.logical.LogicalJoin;
 import org.opensearch.sql.planner.logical.LogicalLimit;
 import org.opensearch.sql.planner.logical.LogicalPlan;
 import org.opensearch.sql.planner.logical.LogicalPlanNodeVisitor;
@@ -55,6 +58,9 @@ import org.opensearch.sql.planner.physical.RenameOperator;
 import org.opensearch.sql.planner.physical.SortOperator;
 import org.opensearch.sql.planner.physical.ValuesOperator;
 import org.opensearch.sql.planner.physical.WindowOperator;
+import org.opensearch.sql.planner.physical.join.HashJoin;
+import org.opensearch.sql.planner.physical.join.NestedLoopsJoin;
+import org.opensearch.sql.planner.physical.join.SortMergeJoin;
 
 /**
  * Default implementor for implementing logical to physical translation. "Default" here means all
@@ -148,6 +154,27 @@ public class DefaultImplementor<C> extends LogicalPlanNodeVisitor<PhysicalPlan, 
     throw new UnsupportedOperationException("Storage engine is responsible for "
         + "implementing and optimizing logical plan with relation involved");
   }
+
+//  @Override
+//  public PhysicalPlan visitJoin(LogicalJoin node, C context) {
+//    PhysicalPlan left = visit(node.getLeft(), context);
+//    PhysicalPlan right = visit(node.getRight(), context);
+//    Expression condition = node.getCondition();
+//    if (node.getType().equals(Join.JoinType.CROSS)) {
+//      if (!node.getIsEquiJoin()) {
+//        return new NestedLoopsJoin(left, right, condition);
+//      } else {
+//        // work estimation should be performed here before determining the hash type
+//        return new HashJoin(left, right, condition);
+//      }
+//    } else {
+//      return new SortMergeJoin(left, right, condition);
+//    }
+//  }
+//
+//  private PhysicalPlan visit(LogicalPlan node, C context) {
+//    return node.accept(this, context);
+//  }
 
   protected PhysicalPlan visitChild(LogicalPlan node, C context) {
     // Logical operators visited here must have a single child

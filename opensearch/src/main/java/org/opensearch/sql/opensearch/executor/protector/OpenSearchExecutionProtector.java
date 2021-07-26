@@ -43,6 +43,7 @@ import org.opensearch.sql.planner.physical.RenameOperator;
 import org.opensearch.sql.planner.physical.SortOperator;
 import org.opensearch.sql.planner.physical.ValuesOperator;
 import org.opensearch.sql.planner.physical.WindowOperator;
+import org.opensearch.sql.planner.physical.join.JoinOperator;
 import org.opensearch.sql.storage.TableScanOperator;
 
 /**
@@ -145,6 +146,11 @@ public class OpenSearchExecutionProtector extends ExecutionProtector {
         visitInput(node.getInput(), context),
         node.getLimit(),
         node.getOffset());
+  }
+
+  @Override
+  public PhysicalPlan visitJoin(JoinOperator node, Object context) {
+    return doProtect(node);
   }
 
   PhysicalPlan visitInput(PhysicalPlan node, Object context) {

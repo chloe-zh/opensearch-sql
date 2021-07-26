@@ -42,14 +42,19 @@ import static org.opensearch.sql.utils.SystemIndexUtils.mappingTable;
 
 import com.google.common.collect.ImmutableList;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.opensearch.sql.ast.expression.Alias;
 import org.opensearch.sql.ast.expression.AllFields;
+import org.opensearch.sql.ast.expression.Compare;
+import org.opensearch.sql.ast.expression.DataType;
 import org.opensearch.sql.ast.expression.Function;
+import org.opensearch.sql.ast.expression.Literal;
 import org.opensearch.sql.ast.expression.UnresolvedExpression;
 import org.opensearch.sql.ast.tree.Filter;
+import org.opensearch.sql.ast.tree.Join;
 import org.opensearch.sql.ast.tree.Limit;
 import org.opensearch.sql.ast.tree.Project;
 import org.opensearch.sql.ast.tree.Relation;
@@ -180,6 +185,41 @@ public class AstBuilder extends OpenSearchSQLParserBaseVisitor<UnresolvedPlan> {
       result = sortBuilder.visit(ctx.orderByClause()).attach(result);
     }
     return result;
+  }
+
+  @Override
+  public UnresolvedPlan visitJoinAsRelation(OpenSearchSQLParser.JoinAsRelationContext ctx) {
+    Relation left = (Relation) visit(ctx.left);
+    Relation right = (Relation) visit(ctx.right);
+    Join.JoinType type = extractJoinType(ctx);
+    UnresolvedExpression condition = ctx.joinCondition() == null
+        ? new Literal(true, DataType.BOOLEAN)
+        : visitAstExpression(ctx.joinCondition());
+    return new Join(left, right, type, condition, isEquiJoin(condition));
+  }
+
+  private boolean isEquiJoin(UnresolvedExpression expr) {
+    if (expr instanceof Compare) {
+      return ((Compare) expr).getOperator().equals("=");
+    }
+    return false;
+  }
+
+  private Join.JoinType extractJoinType(OpenSearchSQLParser.JoinAsRelationContext ctx) {
+    if (ctx.CROSS() == null) {
+      String type = ctx.joinType().getText().toUpperCase(Locale.ROOT);
+      if (type.contains("INNER")) {
+        return Join.JoinType.INNER;
+      } else if (type.contains("LEFT")) {
+        return Join.JoinType.LEFT;
+      }else if (type.contains("RIGHT")) {
+        return Join.JoinType.RIGHT;
+      } else {
+        return Join.JoinType.FULL;
+      }
+    } else {
+      return Join.JoinType.CROSS;
+    }
   }
 
   @Override
