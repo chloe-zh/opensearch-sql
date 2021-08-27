@@ -166,6 +166,26 @@ logicalExpression
 comparisonExpression
     : left=valueExpression comparisonOperator right=valueExpression #compareExpr
     | valueExpression IN valueList                                  #inExpr
+    | searchFunctionName LT_PRTHS field=searchArgValue COMMA query=searchArgValue (COMMA searchArg)* RT_PRTHS
+                                                                    #searchFunctionCall
+    ;
+
+searchArg
+    : searchArgName EQUAL searchArgValue
+    ;
+
+searchArgName
+    : ANALYZER | FUZZINESS | AUTO_GENERATE_SYNONYMS_PHRASE_QUERY | MAX_EXPANSIONS | PREFIX_LENGTH
+    | FUZZY_TRANSPOSITIONS | FUZZY_REWRITE | LENIENT | OPERATOR | MINIMUM_SHOULD_MATCH | ZERO_TERMS_QUERY
+    ;
+
+searchArgValue
+    : qualifiedName
+    | literalValue
+    ;
+
+searchFunctionName
+    : MATCH
     ;
 
 valueExpression

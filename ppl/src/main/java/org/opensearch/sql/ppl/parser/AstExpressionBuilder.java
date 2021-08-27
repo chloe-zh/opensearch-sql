@@ -56,10 +56,13 @@ import static org.opensearch.sql.ppl.antlr.parser.OpenSearchPPLParser.StringLite
 import static org.opensearch.sql.ppl.antlr.parser.OpenSearchPPLParser.TableSourceContext;
 import static org.opensearch.sql.ppl.antlr.parser.OpenSearchPPLParser.WcFieldExpressionContext;
 
+
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -80,9 +83,11 @@ import org.opensearch.sql.ast.expression.Literal;
 import org.opensearch.sql.ast.expression.Not;
 import org.opensearch.sql.ast.expression.Or;
 import org.opensearch.sql.ast.expression.QualifiedName;
+import org.opensearch.sql.ast.expression.UnresolvedArgument;
 import org.opensearch.sql.ast.expression.UnresolvedExpression;
 import org.opensearch.sql.ast.expression.Xor;
 import org.opensearch.sql.common.utils.StringUtils;
+import org.opensearch.sql.ppl.antlr.parser.OpenSearchPPLParser;
 import org.opensearch.sql.ppl.antlr.parser.OpenSearchPPLParserBaseVisitor;
 import org.opensearch.sql.ppl.utils.ArgumentFactory;
 
@@ -292,6 +297,23 @@ public class AstExpressionBuilder extends OpenSearchPPLParserBaseVisitor<Unresol
   @Override
   public UnresolvedExpression visitBooleanLiteral(BooleanLiteralContext ctx) {
     return new Literal(Boolean.valueOf(ctx.getText()), DataType.BOOLEAN);
+  }
+
+  @Override
+  public UnresolvedExpression visitSearchFunctionCall(
+      OpenSearchPPLParser.SearchFunctionCallContext ctx) {
+    return new Function(ctx.searchFunctionName().getText().toLowerCase(Locale.ROOT), getArguments(ctx));
+  }
+
+  private List<UnresolvedExpression> getArguments(OpenSearchPPLParser.SearchFunctionCallContext ctx) {
+    ImmutableList.Builder<UnresolvedExpression> builder = ImmutableList.builder();
+    builder.add(new UnresolvedArgument("field", new Literal(ctx.field.getText(), DataType.STRING)));
+    builder.add(new UnresolvedArgument("query", new Literal(StringUtils.unquoteText(ctx.query.getText()), DataType.STRING)));
+    ctx.searchArg().forEach(v -> {
+      builder.add(new UnresolvedArgument(v.searchArgName().getText().toLowerCase(Locale.ROOT),
+          new Literal(StringUtils.unquoteText(v.searchArgValue().getText()), DataType.STRING)));
+    });
+    return builder.build();
   }
 
   private QualifiedName visitIdentifiers(List<? extends ParserRuleContext> ctx) {

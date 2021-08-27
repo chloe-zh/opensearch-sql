@@ -75,7 +75,6 @@ public class OpenSearchSQLPluginConfig {
 
   @Bean
   public StorageEngine storageEngine() {
-
     OpenSearchFunctions.register(functionRepository);
     return new OpenSearchStorageEngine(client(), settings);
   }
