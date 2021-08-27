@@ -40,6 +40,10 @@ public class FunctionSignature {
    *          By widening rule, the small number means better match
    */
   public int match(FunctionSignature functionSignature) {
+    // todo
+//    if (functionName.getFunctionName().equals("match")) {
+//      return 0;
+//    }
     List<ExprType> functionTypeList = functionSignature.getParamTypeList();
     if (!functionName.equals(functionSignature.getFunctionName())
         || paramTypeList.size() != functionTypeList.size()) {

@@ -300,6 +300,22 @@ functionCall
     | windowFunctionClause                                          #windowFunctionCall
     | aggregateFunction                                             #aggregateFunctionCall
     | aggregateFunction (orderByClause)? filterClause               #filteredAggregationFunctionCall
+    | searchFunctionName LR_BRACKET field=searchArgValue COMMA query=searchArgValue (COMMA searchArg)* RR_BRACKET
+                                                                    #searchFunctionCall
+    ;
+
+searchArg
+    : searchArgName EQUAL_SYMBOL searchArgValue
+    ;
+
+searchArgName
+    : ANALYZER | FUZZINESS | AUTO_GENERATE_SYNONYMS_PHRASE_QUERY | MAX_EXPANSIONS | PREFIX_LENGTH
+    | FUZZY_TRANSPOSITIONS | FUZZY_REWRITE | LENIENT | OPERATOR | MINIMUM_SHOULD_MATCH | ZERO_TERMS_QUERY
+    ;
+
+searchArgValue
+    : qualifiedName
+    | constant
     ;
 
 scalarFunctionName
@@ -374,6 +390,10 @@ textFunctionName
 
 flowControlFunctionName
     : IF | IFNULL | NULLIF | ISNULL
+    ;
+
+searchFunctionName
+    : MATCH
     ;
 
 functionArgs

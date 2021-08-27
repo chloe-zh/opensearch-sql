@@ -46,6 +46,7 @@ import org.opensearch.sql.expression.FunctionExpression;
 import org.opensearch.sql.expression.function.BuiltinFunctionName;
 import org.opensearch.sql.expression.function.FunctionName;
 import org.opensearch.sql.opensearch.storage.script.filter.lucene.LuceneQuery;
+import org.opensearch.sql.opensearch.storage.script.filter.lucene.MatchQuery;
 import org.opensearch.sql.opensearch.storage.script.filter.lucene.RangeQuery;
 import org.opensearch.sql.opensearch.storage.script.filter.lucene.RangeQuery.Comparison;
 import org.opensearch.sql.opensearch.storage.script.filter.lucene.TermQuery;
@@ -71,6 +72,7 @@ public class FilterQueryBuilder extends ExpressionNodeVisitor<QueryBuilder, Obje
           .put(BuiltinFunctionName.LTE.getName(), new RangeQuery(Comparison.LTE))
           .put(BuiltinFunctionName.GTE.getName(), new RangeQuery(Comparison.GTE))
           .put(BuiltinFunctionName.LIKE.getName(), new WildcardQuery())
+          .put(BuiltinFunctionName.MATCH.getName(), new MatchQuery())
           .build();
 
   /**

@@ -296,7 +296,7 @@ public class AstDSL {
     return new Argument(argName, argValue);
   }
 
-  public static UnresolvedArgument unresolvedArg(String argName, UnresolvedExpression argValue) {
+  public static UnresolvedArgument unresolvedArg(String argName, Literal argValue) {
     return new UnresolvedArgument(argName, argValue);
   }
 

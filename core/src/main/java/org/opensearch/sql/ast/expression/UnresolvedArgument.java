@@ -41,9 +41,9 @@ import org.opensearch.sql.ast.AbstractNodeVisitor;
 @EqualsAndHashCode(callSuper = false)
 public class UnresolvedArgument extends UnresolvedExpression {
   private final String argName;
-  private final UnresolvedExpression value;
+  private final Literal value;
 
-  public UnresolvedArgument(String argName, UnresolvedExpression value) {
+  public UnresolvedArgument(String argName, Literal value) {
     this.argName = argName;
     this.value = value;
   }

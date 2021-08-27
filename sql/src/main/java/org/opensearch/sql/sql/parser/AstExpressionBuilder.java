@@ -66,9 +66,15 @@ import static org.opensearch.sql.sql.antlr.parser.OpenSearchSQLParser.TimestampL
 import static org.opensearch.sql.sql.antlr.parser.OpenSearchSQLParser.WindowFunctionClauseContext;
 import static org.opensearch.sql.sql.parser.ParserUtils.createSortOption;
 
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.antlr.v4.runtime.RuleContext;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -77,14 +83,18 @@ import org.opensearch.sql.ast.dsl.AstDSL;
 import org.opensearch.sql.ast.expression.AggregateFunction;
 import org.opensearch.sql.ast.expression.AllFields;
 import org.opensearch.sql.ast.expression.And;
+import org.opensearch.sql.ast.expression.Argument;
 import org.opensearch.sql.ast.expression.Case;
 import org.opensearch.sql.ast.expression.Cast;
+import org.opensearch.sql.ast.expression.DataType;
 import org.opensearch.sql.ast.expression.Function;
 import org.opensearch.sql.ast.expression.Interval;
 import org.opensearch.sql.ast.expression.IntervalUnit;
+import org.opensearch.sql.ast.expression.Literal;
 import org.opensearch.sql.ast.expression.Not;
 import org.opensearch.sql.ast.expression.Or;
 import org.opensearch.sql.ast.expression.QualifiedName;
+import org.opensearch.sql.ast.expression.UnresolvedArgument;
 import org.opensearch.sql.ast.expression.UnresolvedExpression;
 import org.opensearch.sql.ast.expression.When;
 import org.opensearch.sql.ast.expression.WindowFunction;
@@ -355,6 +365,24 @@ public class AstExpressionBuilder extends OpenSearchSQLParserBaseVisitor<Unresol
   public UnresolvedExpression visitDataTypeFunctionCall(
       DataTypeFunctionCallContext ctx) {
     return new Cast(visit(ctx.expression()), visit(ctx.convertedDataType()));
+  }
+
+  @Override
+  public UnresolvedExpression visitSearchFunctionCall(
+      OpenSearchSQLParser.SearchFunctionCallContext ctx) {
+    return new Function(ctx.searchFunctionName().getText().toLowerCase(Locale.ROOT), getArguments(ctx));
+  }
+
+  private List<UnresolvedExpression> getArguments(OpenSearchSQLParser.SearchFunctionCallContext ctx) {
+    ImmutableList.Builder<UnresolvedExpression> builder = ImmutableList.builder();
+    builder.add(new UnresolvedArgument("field", new Literal(ctx.field.getText(), DataType.STRING)));
+    builder.add(new UnresolvedArgument("query", new Literal(StringUtils.unquoteText(ctx.query.getText()), DataType.STRING)));
+    List<OpenSearchSQLParser.SearchArgContext> list = ctx.searchArg();
+    ctx.searchArg().forEach(v -> {
+      builder.add(new UnresolvedArgument(v.searchArgName().getText().toLowerCase(Locale.ROOT),
+          new Literal(StringUtils.unquoteText(v.searchArgValue().getText()), DataType.STRING)));
+    });
+    return builder.build();
   }
 
   @Override
