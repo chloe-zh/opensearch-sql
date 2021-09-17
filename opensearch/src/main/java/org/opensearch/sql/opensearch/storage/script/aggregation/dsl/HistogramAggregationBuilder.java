@@ -19,10 +19,10 @@ import org.opensearch.sql.expression.SpanExpression;
 import org.opensearch.sql.opensearch.storage.serialization.ExpressionSerializer;
 
 public class HistogramAggregationBuilder {
-  private final AggregationBuilderHelper<DateHistogramAggregationBuilder> helper;
+  private final AggregationBuilderHelper helper;
 
   public HistogramAggregationBuilder(ExpressionSerializer serializer) {
-    this.helper = new AggregationBuilderHelper<>(serializer);
+    this.helper = new AggregationBuilderHelper(serializer);
   }
 
   public DateHistogramAggregationBuilder build(NamedExpression namedExpression) {
